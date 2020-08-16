@@ -14,6 +14,7 @@ import us.erlang.wechat_moments.R;
 
 public class ImagesAdapter extends BaseAdapter {
     String[] images;
+
     public ImagesAdapter(String[] images) {
         this.images = images;
     }
@@ -44,7 +45,12 @@ public class ImagesAdapter extends BaseAdapter {
             imageItemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.image_item, null);
             if (Objects.nonNull(images[position])) {
                 ImageView imageView = imageItemView.findViewById(R.id.image);
-                Glide.with(imageView).load(images[position]).into(imageView);
+                Glide
+                        .with(imageView)
+                        .load(images[position])
+                        .placeholder(R.drawable.img_loading)
+                        .error(R.drawable.img_loading)
+                        .into(imageView);
             }
         } else {
             imageItemView = (View) view;
