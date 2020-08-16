@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -31,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private FeedsViewModel feedsViewModel;
     ImageView profileImageView, avatarView;
     TextView nickTextView;
-
+    private FeedAdapter feedAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         avatarView = findViewById(R.id.avatar);
         nickTextView = findViewById(R.id.nick);
 
-        userViewModel = obtainUserViewModel();
+        userViewModel = getUserViewModel();
         userViewModel.observeUser(this, new Observer<User>() {
             @Override
             public void onChanged(User user) {
@@ -59,17 +60,17 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.feeds_recycler_view);
         recyclerView.setHasFixedSize(true);
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        final FeedAdapter feedAdapter = new FeedAdapter();
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        feedAdapter = new FeedAdapter();
         recyclerView.setAdapter(feedAdapter);
+        loadMoreFeedsWhenPullingUp(recyclerView, layoutManager);
 
-
-        feedsViewModel = obtainFeedsViewModel();
+        feedsViewModel = getFeedsViewModel();
         feedsViewModel.observeFeeds(this, new Observer<List<Feed>>() {
             @Override
             public void onChanged(List<Feed> feeds) {
-                feedAdapter.setFeeds(feeds);
+                feedAdapter.initFeeds(feeds);
             }
         });
         feedsViewModel.loadFeeds();
@@ -78,21 +79,38 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-
+                feedAdapter.reloadFeeds();
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
     }
 
+    private void loadMoreFeedsWhenPullingUp(RecyclerView recyclerView, LinearLayoutManager layoutManager) {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0) {
+                    if ((layoutManager.getChildCount() + layoutManager.findFirstVisibleItemPosition())
+                            >= layoutManager.getItemCount()) {
+                        feedAdapter.displayMoreFeeds();
+                    }
+                }
 
-    private UserViewModel obtainUserViewModel() {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
+    }
+
+
+    private UserViewModel getUserViewModel() {
         UserRepository userRepository = new UserRepository(httpUtil);
         UserViewModel userViewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(UserViewModel.class);
         userViewModel.setUserRepository(userRepository);
         return userViewModel;
     }
 
-    private FeedsViewModel obtainFeedsViewModel() {
+    private FeedsViewModel getFeedsViewModel() {
         FeedRepository feedRepository = new FeedRepository(httpUtil);
         FeedsViewModel feedsViewModel = new ViewModelProvider(this, new ViewModelProvider.NewInstanceFactory()).get(FeedsViewModel.class);
         feedsViewModel.setFeedRepository(feedRepository);

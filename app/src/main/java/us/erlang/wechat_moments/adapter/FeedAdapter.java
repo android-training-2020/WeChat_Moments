@@ -23,11 +23,32 @@ import us.erlang.wechat_moments.model.User;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedViewHolder> {
     private List<Feed> feeds;
+    private List<Feed> allFeeds;
     Context context;
 
     public void setFeeds(List<Feed> feeds) {
         this.feeds = feeds;
         this.notifyDataSetChanged();
+    }
+
+    public void setAllFeeds(List<Feed> feeds) {
+        this.allFeeds = feeds;
+    }
+
+    public void initFeeds(List<Feed> feeds) {
+        setAllFeeds(feeds);
+        setFeeds(feeds.subList(0, Math.min(feeds.size(), 5)));
+    }
+
+    public void displayMoreFeeds() {
+        int toIndex = Math.min(this.feeds.size() + 5, this.allFeeds.size());
+        List<Feed> feeds = this.allFeeds.subList(0, toIndex);
+        setFeeds(feeds);
+    }
+
+    public void reloadFeeds() {
+        List<Feed> feeds = this.allFeeds.subList(0, Math.min(this.allFeeds.size(), 5));
+        setFeeds(feeds);
     }
 
     @NonNull

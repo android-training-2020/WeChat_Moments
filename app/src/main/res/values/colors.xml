@@ -8,4 +8,5 @@
     <color name="colorBlue">#47a7f2</color>
     <color name="colorAccent">#03DAC5</color>
     <color name="white">#ffffff</color>
+    <color name="comment_bg_color">#efefef</color>
 </resources>
