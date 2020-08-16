@@ -93,7 +93,12 @@ public class MainActivity extends AppCompatActivity {
                 if (dy > 0) {
                     if ((layoutManager.getChildCount() + layoutManager.findFirstVisibleItemPosition())
                             >= layoutManager.getItemCount()) {
-                        feedAdapter.displayMoreFeeds();
+                        recyclerView.post(new Runnable() {
+                            public void run() {
+                                feedAdapter.displayMoreFeeds();
+                            }
+                        });
+
                     }
                 }
 
